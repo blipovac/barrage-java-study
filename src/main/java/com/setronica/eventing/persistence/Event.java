@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 
+// liquibase cli?
 @Entity
 @Table(name = "\"event\"")
 public class Event {
