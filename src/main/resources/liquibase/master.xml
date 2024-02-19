@@ -2,5 +2,5 @@
     <include file="classpath:liquibase/changelog/00000000000000_initial_schema.xml" />
     <include file="classpath:liquibase/changelog/00000000000001_create_event_schedule_schema.xml" />
     <include file="classpath:liquibase/changelog/00000000000002_create_ticket_order_schema.xml" />
-<!--    <include file="classpath:liquibase/changelog/00000000000004_create_ticket_order_trigger.xml" />-->
+    <include file="classpath:liquibase/changelog/00000000000004_create_ticket_order_trigger.xml" />
 </databaseChangeLog>
