@@ -11,7 +11,7 @@ services:
     hostname: db.dockernet
     volumes:
       - ./docker/initdb:/docker-entrypoint-initdb.d
-      - ./docker/postgres_data:/var/lib/postgresql/data
+#      - ./docker/postgres_data:/var/lib/postgresql/data
 
 #  keycloak:
 #    image: quay.io/keycloak/keycloak:22.0

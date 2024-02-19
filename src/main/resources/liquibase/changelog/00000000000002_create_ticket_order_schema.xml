@@ -1,0 +1,34 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+    <changeSet id="20240128-1" author="bruno.lipovac">
+        <createTable tableName="ticket_order">
+            <column name="id" autoIncrement="true" type="int">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="firstname" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lastname" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_schedule_id" type="int">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+
+        <addForeignKeyConstraint baseColumnNames="event_schedule_id"
+                                 baseTableName="ticket_order"
+                                 constraintName="fk_event_schedule_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="event_schedule"/>
+    </changeSet>
+</databaseChangeLog>
