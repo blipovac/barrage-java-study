@@ -59,42 +59,42 @@ services:
 #    ports:
 #      - 4180:4180
 #
-#  elasticsearch:
-#    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
-#    volumes:
-#      - ./docker/config/elk/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
-#      - ./docker/data/elasticsearch:/usr/share/elasticsearch/data:rw
-#    ports:
-#      - "9200:9200"
-#    hostname: es.dockernet
-#    environment:
-#      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
-#
-#  kibana:
-#    image: docker.elastic.co/kibana/kibana:7.8.0
-#    environment:
-#      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
-#    volumes:
-#      - ./docker/config/elk/kibana/config/:/usr/share/kibana/config:ro
-#    ports:
-#      - "5601:5601"
-#    hostname: kibana.dockernet
-#    depends_on:
-#      - elasticsearch
-#
-#  logstash:
-#    image: docker.elastic.co/logstash/logstash:7.8.0
-#    volumes:
-#      - ./docker/config/elk/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
-#      - ./docker/config/elk/logstash/pipeline:/usr/share/logstash/pipeline:ro
-#    ports:
-#      - "5000:5000"
-#      - "9600:9600"
-#    hostname: logstash.dockernet
-#    environment:
-#      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
-#    depends_on:
-#      - elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
+    volumes:
+      - ./docker/config/elk/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - ./docker/data/elasticsearch:/usr/share/elasticsearch/data:rw
+    ports:
+      - "9200:9200"
+    hostname: es.dockernet
+    environment:
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.8.0
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    volumes:
+      - ./docker/config/elk/kibana/config/:/usr/share/kibana/config:ro
+    ports:
+      - "5601:5601"
+    hostname: kibana.dockernet
+    depends_on:
+      - elasticsearch
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.8.0
+    volumes:
+      - ./docker/config/elk/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./docker/config/elk/logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5555:5000"
+      - "9600:9600"
+    hostname: logstash.dockernet
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    depends_on:
+      - elasticsearch
 #
 #  rabbitmq:
 #    image: rabbitmq:3.12.10-management-alpine

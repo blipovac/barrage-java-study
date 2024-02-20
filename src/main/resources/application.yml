@@ -7,3 +7,6 @@ spring:
     url: jdbc:postgresql://localhost:5432/event
     username: event_user
     password: pa55w0rd
+
+log:
+  destination: 127.0.0.1:5555

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+    <property name="DESTINATION" value="${log.destination:-localhost:5555}"/>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <appender name="LOGSTASH_DEFAULT" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${DESTINATION}</destination>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <mdc/>
+                <context/>
+                <version/>
+                <logLevel/>
+                <loggerName/>
+                <pattern>
+                    <pattern>
+                    </pattern>
+                </pattern>
+                <threadName/>
+                <message/>
+                <logstashMarkers/>
+                <arguments/>
+                <stackTrace/>
+            </providers>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="LOGSTASH_DEFAULT"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>
