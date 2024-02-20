@@ -1,10 +1,13 @@
 package com.setronica.eventing.app;
 
 import com.setronica.eventing.exceptions.EntityNotFoundException;
+import com.setronica.eventing.exceptions.NotEnoughSeatsAvailableException;
 import com.setronica.eventing.persistence.TickerOrderRepository;
 import com.setronica.eventing.persistence.TicketOrder;
+import java.sql.SQLException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -37,7 +40,21 @@ public class TicketOrderService {
 
   public TicketOrder create(TicketOrder ticketOrder) {
     log.debug("Creating ticket order");
-    TicketOrder createdTicketOrder = tickerOrderRepository.save(ticketOrder);
+    TicketOrder createdTicketOrder = null;
+
+    try {
+      createdTicketOrder = tickerOrderRepository.save(ticketOrder);
+    } catch (DataAccessException e) {
+      if (e.getCause() instanceof SQLException sqlException) {
+        if (sqlException.getMessage().contains(NotEnoughSeatsAvailableException.ERROR_MESSAGE)) {
+          throw new NotEnoughSeatsAvailableException(
+              NotEnoughSeatsAvailableException.ERROR_MESSAGE, sqlException);
+        }
+      } else {
+        throw e;
+      }
+    }
+
     log.debug("Successfully created ticket order");
 
     return createdTicketOrder;
