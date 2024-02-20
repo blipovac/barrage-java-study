@@ -4,6 +4,7 @@ import com.setronica.eventing.dto.ErrorResponseDto;
 import com.setronica.eventing.exceptions.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -23,5 +24,20 @@ public class GlobalExceptionHandler {
             request.getRequestURI());
 
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+  }
+
+  @ExceptionHandler(DataAccessException.class)
+  public ResponseEntity<ErrorResponseDto> handleDataAccessException(
+      DataAccessException e, HttpServletRequest request) {
+
+    log.error("Data access exception:", e);
+
+    ErrorResponseDto errorResponse =
+        new ErrorResponseDto(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+            "An error occurred while accessing the database",
+            request.getRequestURI());
+
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
   }
 }
