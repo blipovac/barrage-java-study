@@ -1,9 +1,15 @@
 package com.setronica.eventing.app;
 
+import com.setronica.eventing.dto.PaymentGatewayResponseDto;
 import com.setronica.eventing.exceptions.EntityNotFoundException;
 import com.setronica.eventing.exceptions.NotEnoughSeatsAvailableException;
+import com.setronica.eventing.exceptions.PaymentFailedException;
+import com.setronica.eventing.persistence.MockPaymentGatewayRepository;
+import com.setronica.eventing.persistence.Payment;
+import com.setronica.eventing.persistence.PaymentRepository;
 import com.setronica.eventing.persistence.TickerOrderRepository;
 import com.setronica.eventing.persistence.TicketOrder;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +20,15 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class TicketOrderService {
   private final TickerOrderRepository tickerOrderRepository;
+  private final MockPaymentGatewayRepository paymentGatewayRepository;
+  private final PaymentRepository paymentRepository;
 
-  public TicketOrderService(TickerOrderRepository tickerOrderRepository) {
+  public TicketOrderService(TickerOrderRepository tickerOrderRepository,
+                            MockPaymentGatewayRepository paymentGatewayRepository,
+                            PaymentRepository paymentRepository) {
     this.tickerOrderRepository = tickerOrderRepository;
+    this.paymentGatewayRepository = paymentGatewayRepository;
+    this.paymentRepository = paymentRepository;
   }
 
   public List<TicketOrder> getAll() {
@@ -39,11 +51,40 @@ public class TicketOrderService {
   }
 
   public TicketOrder create(TicketOrder ticketOrder) {
-    log.debug("Creating ticket order");
-    TicketOrder createdTicketOrder = null;
+    log.debug("Booking a ticket order");
+    TicketOrder bookedTicketOrder = bookTicket(ticketOrder);
+    log.debug("Successfully booked ticket order: " + bookedTicketOrder.getId());
 
+    log.info("Processing payment for ticket order:" + bookedTicketOrder.getId());
+    PaymentGatewayResponseDto gatewayResponse =
+        paymentGatewayRepository.processPayment(BigDecimal.valueOf(ticketOrder.getAmount()),
+            "made up card token");
+
+    paymentRepository.save(Payment.fromGatewayResponse(gatewayResponse, bookedTicketOrder.getId()));
+
+    if (!gatewayResponse.isSuccess()) {
+      log.warn(
+          "Payment failed for ticket order: " + bookedTicketOrder.getId() + ". Cancelling booking");
+      cancelBooking(bookedTicketOrder);
+    }
+
+    log.info("Payment processed successfully for ticket order: " + bookedTicketOrder.getId());
+
+    log.debug("Finalizing ticket order");
+    completeBooking(bookedTicketOrder);
+    log.debug("Successfully finalized ticket order");
+
+    return bookedTicketOrder;
+  }
+
+  private void completeBooking(TicketOrder bookedTicketOrder) {
+    bookedTicketOrder.setPaymentStatus(TicketOrder.PAYMENT_STATUS.SALE);
+    tickerOrderRepository.save(bookedTicketOrder);
+  }
+
+  private TicketOrder bookTicket(TicketOrder ticketOrder) {
     try {
-      createdTicketOrder = tickerOrderRepository.save(ticketOrder);
+      return tickerOrderRepository.save(ticketOrder);
     } catch (DataAccessException e) {
       if (e.getCause() instanceof SQLException sqlException) {
         if (sqlException.getMessage().contains(NotEnoughSeatsAvailableException.ERROR_MESSAGE)) {
@@ -53,11 +94,15 @@ public class TicketOrderService {
       } else {
         throw e;
       }
+
+      return null;
     }
+  }
 
-    log.debug("Successfully created ticket order");
-
-    return createdTicketOrder;
+  private void cancelBooking(TicketOrder bookedTicketOrder) {
+    bookedTicketOrder.setPaymentStatus(TicketOrder.PAYMENT_STATUS.CANCELLED);
+    tickerOrderRepository.save(bookedTicketOrder);
+    throw new PaymentFailedException();
   }
 
   public void update(Integer id, TicketOrder ticketOrder) {

@@ -1,0 +1,24 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet id="20240226-2" author="bruno.lipovac">
+        <sql>
+            CREATE OR REPLACE FUNCTION check_available_seats() RETURNS TRIGGER AS $$
+            DECLARE
+            available_seats INTEGER;
+            taken_seats INTEGER;
+            BEGIN
+            SELECT available_seats INTO available_seats FROM event_schedule WHERE id = NEW.event_schedule_id;
+            SELECT sum(amount) INTO taken_seats FROM ticket_order WHERE event_schedule_id = NEW.event_schedule_id AND payment_status IN ('BOOKED', 'SALE');
+            IF NEW.amount + COALESCE(taken_seats, 0) > available_seats THEN
+            RAISE EXCEPTION 'Not enough seats available';
+            END IF;
+
+            RETURN NEW;
+            END;
+            $$ LANGUAGE plpgsql;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

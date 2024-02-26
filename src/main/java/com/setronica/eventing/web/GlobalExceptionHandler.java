@@ -2,6 +2,8 @@ package com.setronica.eventing.web;
 
 import com.setronica.eventing.dto.ErrorResponseDto;
 import com.setronica.eventing.exceptions.EntityNotFoundException;
+import com.setronica.eventing.exceptions.NotEnoughSeatsAvailableException;
+import com.setronica.eventing.exceptions.PaymentFailedException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -39,5 +41,33 @@ public class GlobalExceptionHandler {
             request.getRequestURI());
 
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+  }
+
+  @ExceptionHandler(NotEnoughSeatsAvailableException.class)
+  public ResponseEntity<ErrorResponseDto> handleNotEnoughSeatsAvailableException(
+      NotEnoughSeatsAvailableException e, HttpServletRequest request) {
+    log.warn("Not enough seats available:", e);
+
+    ErrorResponseDto errorResponse =
+        new ErrorResponseDto(HttpStatus.UNPROCESSABLE_ENTITY.value(),
+            HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase(),
+            e.getMessage(),
+            request.getRequestURI());
+
+    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
+  }
+
+  @ExceptionHandler(PaymentFailedException.class)
+  public ResponseEntity<ErrorResponseDto> handlePaymentFailedException(
+      PaymentFailedException e, HttpServletRequest request) {
+    log.error("Payment failed:", e);
+
+    ErrorResponseDto errorResponse =
+        new ErrorResponseDto(HttpStatus.BAD_REQUEST.value(),
+            HttpStatus.BAD_REQUEST.getReasonPhrase(),
+            e.getMessage(),
+            request.getRequestURI());
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
   }
 }

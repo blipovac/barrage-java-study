@@ -27,4 +27,14 @@ public class TicketOrder {
 
     @Column
     private int eventScheduleId;
+
+    @Column
+    private PAYMENT_STATUS paymentStatus;
+
+    public enum PAYMENT_STATUS {
+        BOOKED,
+        SALE,
+        REFUNDED,
+        CANCELLED
+    }
 }
